@@ -16,10 +16,10 @@ You can use the number clues to solve the game by opening all of the safe square
 If you click on a mine you lose the game!
 
 ### Flagging System:
-Flag can only be put in an unrevealed tile
-If a tile is flagged it cannot be revealed/dig
-To reveal/dig the tile the flag needs to be unflag
-But when revealing a cell the flag will be removed
+Flag can only be put in an unrevealed tile.
+If a tile is flagged it cannot be revealed/dig.
+To reveal/dig the tile the flag needs to be unflag.
+But when revealing a cell the flag will be removed.
 
 
 
