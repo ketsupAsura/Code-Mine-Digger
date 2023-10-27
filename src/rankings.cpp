@@ -18,7 +18,6 @@
 #include <iomanip>
 #include "rankings.h"
 
-// Leaderboard -> class
 // initializer
 Leaderboard::Leaderboard(const std::string& filename) 
 : filename(filename) {}

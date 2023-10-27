@@ -6,12 +6,10 @@
 #include <string>
 #include <vector>
 
-
 struct LeaderboardEntry {
     std::string player_name;
     int score;
 };
-
 
 class Leaderboard {
 private:
@@ -34,4 +32,3 @@ public:
 };
 
 #endif
-
