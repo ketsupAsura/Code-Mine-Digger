@@ -1,21 +1,17 @@
+/*
+ * Code Mine Digger
+ * MP1: Application of Arrays
+ * Class: BSCpE - 2A
+ * Members:
+ *     Matt Rohan Alagaban
+ *     Hoechst Mostaza
+ *     Paul Owen Belga
+ *     Gian Tandog
+ *     Robert Beralde
+ */
+
+
 // ketsup@asura 
-
-// TODO:
-// Make another mode challenge mode (have a timer to finish the game)
-// make a leaderboard syste (sorting algorithm)
-
-// IDEAS: 
-
-// TODO:
-// make challenge mode, the player will go throughout different levels
-// each level has a corresponding time limit to be finished
-// scoring will be done by adding the total time the player takes to finished the gameloop
-// and the correct flag the player puts
-
-// TODO: Maybe i'll call this one Adventure Mode
-// add obstacles on the board which the player will through 
-// add a finish line and the player needs to find the shortest path to it
-
 #include <iostream>
 #include <limits>
 #include <ctime>
@@ -33,13 +29,16 @@ int ROWS, COLS; // will store the rows and columns (the size of the board)
 char** PLAYER_BOARD, **HIDDEN_BOARD;  
 int MINES, MOVES;
 
-// allocate memory for the board dynamically
+// will only be used in the infinite roulette game
+bool EXITED = true;
+
+
+// allocate memory for the board dynamically (during runtime)
 void allocate_memory(char**& board) {
     board = new char* [ROWS];
     for (int i = 0; i < ROWS; i++) {
         board[i] = new char[COLS];
     }
-    //std::cout << "Hello1" << std::endl;
 }
 
 // this will free the memory from the boards after the game has ended
@@ -49,11 +48,10 @@ void free_memory(char**& board) {
     }
     delete [] board;
     board = nullptr; // make sure that the pointer does not points anywhere in the memory
-    //std::cout << "Hello2" << std::endl;
 }
 
 
-// put character as the default value of the board
+// put the ? character as the default value of the board
 void initializeBoard(char**& board) {
     for (int i = 0; i < ROWS; i++) {
         for (int j = 0; j < COLS; j++) {
@@ -243,22 +241,8 @@ void printBoard(char**& board) {
     
 }
 
-/*
-// print the board (older version)
-// i can still use this if i guess in the normal game though
-// it's really small and the characters are almost dikit-dikit na from my what i can see lol
-void printBoard(char**& board) {
-    for (int i = 0; i < ROWS; i++) {
-        std::cout << "| ";
-        for (int j = 0; j < COLS; j++) {
-            std::cout << board[i][j] << " | ";
-        }
-        std::cout << std::endl;
-    }
-}
-*/
 
-// the inline there is optional it just say that the function is oneline
+// the inline here is optional it just say that the function is oneline
 inline bool isValidNumMines() { return (ROWS * COLS) > MINES && MINES > 0; }
 
 void printFinalBoard() {
@@ -391,17 +375,14 @@ void printLeaderboard(const std::string& filename) {
     system("cls");
  
     if (filename == "easyLeaderboard.txt") { leaderboard_title = "Easy Difficulty Leaderboard"; }
-    if (filename == "mediumLeaderboard.txt") { leaderboard_title = "Meduim Difficulty Leaderboard"; }
+    if (filename == "mediumLeaderboard.txt") { leaderboard_title = "Medium Difficulty Leaderboard"; }
     if (filename == "hardLeaderboard.txt") { leaderboard_title = "Hard Difficulty Leaderboard"; }
+    if (filename == "infinite.txt") { leaderboard_title = "Infinite Roulette LeaderBoard"; }
 
-    std::cout << "\n\t" << leaderboard_title << "\n\n";
+    std::cout <<"\n\t\t\t  " << leaderboard_title << "\n\n";
 
     Leaderboard leaderboard = Leaderboard(filename);
-    leaderboard.readLeaderboardFromFile();
     leaderboard.displayLeaderboard();
-    leaderboard.writeLeaderboardToFile();
-
-    system("pause");
 }
 
 // will display the leaderboard and write the sorted leaderboard to the database file
@@ -421,6 +402,7 @@ void viewGameModeLeaderboard() {
         std::cout << "[1] Easy Leaderboard\n";
         std::cout << "[2] Meduim Leaderboard\n";
         std::cout << "[3] Hard Leaderboard\n";
+        std::cout << "[4] Infinite Roulette Leaderboard\n";
         std::cout << "[0] Back\n";
         std::cout << "CHOICE: ";
         std::getline(std::cin, input_choice);
@@ -438,6 +420,10 @@ void viewGameModeLeaderboard() {
                     break;
                 case 3: 
                     printLeaderboard("hardLeaderboard.txt");
+                    proceded = true;
+                    break;
+                case 4:
+                    printLeaderboard("infinite.txt");
                     proceded = true;
                     break;
                 case 0: return;
@@ -468,18 +454,46 @@ void difficultyLevelsLeaderboard(const std::string& difficulty, const std::strin
     leaderboard.appendDataToFile(name, time);
 }
 
+
+bool onlyLetters(const std::string& playerName) {
+    for (char letter : playerName) {
+        // allow  onlyc letters and spaces
+        if (!std::isalpha(letter) && !std::isspace(letter)) { return false; }
+    }
+    return true;
+}
+
 // will get the players name
 std::string get_playerName() {
     std::string playerName;
-    std::cout << "Enter your name: ";
-    std::getline(std::cin, playerName);
+
+    while (true) {
+        std::cout << "\nEnter your name: ";
+        std::getline(std::cin, playerName);
+
+        // limit the name
+        if (playerName.length() > 10) {
+            std::cout  << "Name should be less than 10 characters\n";
+            continue;
+        }
+         
+        // should only contains letter
+        if (!onlyLetters(playerName)) {
+            std::cout << "Name should only contains letters\n";
+            continue;
+        }
+        break;
+    }
 
     return playerName;
 }
 
 
+
 // take the move of the player, updates and renders the board
-void gameloop(const std::string& difficulty = "") {
+// the behaviour will based on the user's selected gamemode
+void gameloop(const std::string& gameMode = "", std::string playerName = "") {
+
     // this will check if the player's move is its first move
     bool playerFirstMove = true;
 
@@ -494,7 +508,11 @@ void gameloop(const std::string& difficulty = "") {
     initializeBoard(PLAYER_BOARD);
 
     // get the player name before starting the game
-    std::string playerName = get_playerName();
+    // if there is no playerName provided 
+    // don't get player name for custom_game
+    if (playerName.empty() && gameMode != "custom_game") {
+        playerName = get_playerName();
+    }
 
     int x, y;
     // starts the game timer
@@ -502,17 +520,18 @@ void gameloop(const std::string& difficulty = "") {
     while (true) {
         system("cls");
 
-        // Uncomment to print the HIDDEN_BOARD where the bombs are
+        /*// Uncomment to print the HIDDEN_BOARD where the bombs are
         std::cout << std::endl;
         std::cout << "HIDDEN_BOARD:" << std::endl;
         printBoard(HIDDEN_BOARD);
         std::cout << std::endl;
+        */
         
         
-        std::cout << "PLAYER_BOARD:" << std::endl;
-        std::cout << "MOVES LEFT: "<< MOVES << std::endl;
+        //std::cout << "PLAYER_BOARD:" << std::endl;
         printBoard(PLAYER_BOARD);
         std::cout << "\n";
+        std::cout << "MOVES LEFT: "<< MOVES << std::endl;
 
         int moveNumber = moveOptions();
     
@@ -562,6 +581,9 @@ void gameloop(const std::string& difficulty = "") {
         }
 
         if(moveNumber == 0) {
+             if (gameMode == "infinite_roulette") { EXITED = true; }
+
+            // game ended, free_memory
             free_memory(PLAYER_BOARD);
             free_memory(HIDDEN_BOARD);
             return;
@@ -570,6 +592,8 @@ void gameloop(const std::string& difficulty = "") {
         
 
         if(isMine(x, y) && Flag == false) { 
+            if (gameMode == "infinite_roulette") { EXITED = true; }
+
             system("cls");
             // stops the game timer
             auto end_time = std::chrono::high_resolution_clock::now();
@@ -611,10 +635,17 @@ void gameloop(const std::string& difficulty = "") {
             std::cout << "'F' -> flag" << std::endl;
             std::cout << "The number's (1-8) -> represents the number of bombs adjacent to that cell/tile" << std::endl;
             system("pause");
+
+            // game ended, free the memory
+            free_memory(PLAYER_BOARD);
+            free_memory(HIDDEN_BOARD);
+
             return;
         }
 
         if (MOVES == 0) {
+            if (gameMode == "infinite_roulette") { EXITED = false; }
+
             system("cls");
             // stops the game timer
             auto end_time = std::chrono::high_resolution_clock::now();
@@ -626,7 +657,7 @@ void gameloop(const std::string& difficulty = "") {
             int time = static_cast<int>(completionTimeInSeconds.count());
 
             // record the data of the player
-            difficultyLevelsLeaderboard(difficulty, playerName, time);
+            difficultyLevelsLeaderboard(gameMode, playerName, time);
 
             int hours = completionTimeInSeconds.count() / 3600;
             int minutes = (completionTimeInSeconds.count() % 3600) / 60;
@@ -646,12 +677,21 @@ void gameloop(const std::string& difficulty = "") {
             std::cout << "'F' -> flag" << std::endl;
             std::cout << "The number's (1-8) -> represents the number of bombs adjacent to that cell" << std::endl;
             system("pause");
+
+            
+            // game ended, free the memory
+            free_memory(PLAYER_BOARD);
+            free_memory(HIDDEN_BOARD);
+
             return;
         }
 
     }
 }
 
+// The Rows and Columns of the board as well as the number of mines 
+// will be determined by this functions according to what the user selected game mode
+// ------------------------------------- Game Modes ---------------------------------------------
 
 void difficultyLevels() {
     std::string input_difficulty;
@@ -713,6 +753,7 @@ void difficultyLevels() {
     }
 
 }
+
 
 // custom game mode -> ask the user to initialize his/her own row, columns (size of the board) and no. of mines
 void customGame() {
@@ -783,54 +824,37 @@ void customGame() {
     // it means that its already end of the line or the input (which will then put the value in the stream to a variable)
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    gameloop();
+    gameloop("custom_game");
 
 }
 
-// suggestion: put lives 3 each game
-void randomGame() {
+// this game will continuously give a random board as well as random mines
+// to the player to play, this will only end if the player choose to quit the game 
+// of if the player losses the game
+void infiniteRoulette(const std::string& gameMode, const std::string& playerName) {
+    // this is so hard to implement ... 
 
     srand(time(0));
-    while (ROWS < 3 || COLS < 3 || MINES < 1) {
+    do {
         ROWS = rand() % 9;
         COLS = rand() % 20;
 
-        // generates mine atleast half the board size 
+        // generates mine atmost half the board size 
         MINES = rand() % ((ROWS * COLS)/2);
 
         // there is atleast 1 mine on the board
         if (MINES < 1) { MINES++; }
-    }
-    gameloop();
+
+    } while (ROWS < 3 || COLS < 3 || MINES < 1);
+
+    gameloop(gameMode, playerName);
+
 
 }
 
+// ------------------------------------- Game Modes ---------------------------------------------
 
-// this function just rely some message to the individuals who will play this game
-void text() {
-    std::cout << "\nAUTHOR: ketsup@asura\n";
-    std::cout << "GMAIL: alagabanmatt@gmail.com\n\n";
 
-    std::cout << "README:\n";
-    std::cout << "Welcome To My Minesweeper Game\n";
-    std::cout << "Have Fun With This Simple Game That I Made\n";
-    std::cout << "This is a bit rush so if you see in any way this code can still be optimized pls. contact me\n";
-    std::cout << "There is still a lot to do in this program but it's already functional, enjoy!\n\n";
-
-    std::cout << "Rules:\n";
-    std::cout << "All Values inputed should be positive(includes 0) and no spaces\n";
-    std::cout << "There are two game modes:\n";
-    std::cout << "1. Normal Game -> where the user should pick one of the three difficulties of the game\n";
-    std::cout << "2. Custom Game -> where the user will put his/her own size of the board (the rows and columns)\n";
-    std::cout << "               and as well as the number of mines he/she wanted to be in the board\n";
-    std::cout << "               The Limit for the rows is 3 - 9 inclusive\n";
-    std::cout << "               The Limit for the columns is 3 - 20 inclusive\n";
-    std::cout << "               The Limit for the no. of mines should be less than the number of cell within the board (rows * columns) > mines\n";
-    std::cout << "The Rest  will be on the README.md file (In progress)\n\n"; 
-
-}
-
-// this will be the starting point of the game (main menu of Minesweeper)
 void gameModes() {
     // this will store the user input until it is valid
     std::string input_choice;
@@ -839,6 +863,16 @@ void gameModes() {
     int choice;
 
     while (true) {
+        std::string playerName;
+
+        // this two variables will only be used in infinite_roulette game
+        bool play_infiniteRoulette = false;
+        int win_streak = 0;
+
+        bool play_minesAscent = false;
+        int level;
+
+        // notes if the player plays a game
         bool proceded = false;
 
         // default warning message (inside the loop cause needed to be reseted)
@@ -848,11 +882,10 @@ void gameModes() {
 
         game_title();
 
-
         std::cout << "GAMEPLAY MODES:" << std::endl;
         std::cout << "[1] Difficulty Levels" << std::endl;
         std::cout << "[2] Custom Game" << std::endl;
-        std::cout << "[3] Random Game" << std::endl;
+        std::cout << "[3] Infinite Roulette" << std::endl;
         std::cout << "[0] Back" << std::endl;
         std::cout << "CHOICE: ";
         std::getline(std::cin, input_choice);
@@ -870,7 +903,19 @@ void gameModes() {
                     proceded = true;
                     break;
                 case 3: 
-                    randomGame();
+                    playerName = get_playerName();
+                    while (true) {
+                        infiniteRoulette("infinite_roulette", playerName);
+
+                        if (EXITED) { 
+                            EXITED = false;
+                            break;
+                        }
+
+                        // add a score if the player only wins
+                        win_streak++;
+                    }
+                    play_infiniteRoulette = true;
                     proceded = true;
                     break;
                 case 0: 
@@ -879,6 +924,11 @@ void gameModes() {
             }
 
         }
+
+        if (play_infiniteRoulette) {
+            Leaderboard leaderboard = Leaderboard("infinite.txt");
+            leaderboard.appendDataToFile(playerName, win_streak);
+        }
         if (!proceded) {
             std::cout << warningMessage << std::endl;
             system("pause");
@@ -886,6 +936,7 @@ void gameModes() {
     }
 }
 
+// will be the starting menu of the game
 void startMenu() {
     // this will store the user input until it is valid
     std::string input_choice;
@@ -920,7 +971,7 @@ void startMenu() {
                     viewGameModeLeaderboard(); 
                     break;
                 case 0: 
-                    std::cout << "\nThank You For Checking My Game!!!" << std::endl;
+                    std::cout << "\nThank You For Checking The Game!!!" << std::endl;
                     return;
                 default: warningMessage = "\nOption doesn't exist!"; // change the warning message
             }

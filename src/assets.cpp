@@ -1,6 +1,4 @@
 // ketsup@asura
-// Implementation of the assets.h which is the interface
-
 #include <iostream>
 #include <thread>
 #include <chrono>
@@ -68,6 +66,10 @@ void game_title() {
     std::cout << "\n\n";
 }
 
+// this feature will unlock after i learn how to work with threads
+// this can be useful if the database is large and much more longer to read
+// this will ensure that the this animation will end after the program
+// reads and process all the data in the file
 void loading_animation() {
     // Define a sequence of characters for the loading animation
     const char loadingChars[] = { '|', '\\', '-', '/' };
