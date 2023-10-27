@@ -44,27 +44,27 @@ Compiling (this assumes that you have mingw as your c++ compiler):
 2. To move to a directory you can use the command: cd [programDirectory]
 3. Compile the two libraries into object using:
 ``````
-       * g++ -c src/assets.cpp -I include -o assets.o
-       * g++ -c src/rankings.cpp -I include -o rankings.o
+       g++ -c src/assets.cpp -I include -o assets.o
+       g++ -c src/rankings.cpp -I include -o rankings.o
 ``````
 Building:
-4. After turning the two files to object link it together with the main files:
-    note: you can name the excutable mines with any name you want      
+4. After turning the two files to object link it together with the main files:  
+   (note: you can name the excutable mines with any name you want)      
 ``````
-       * g++ main.cpp assets.o rankings.o -I include -o mines
+       g++ main.cpp assets.o rankings.o -I include -o mines
 ``````
 Run and play the game:
-5. The run the executable using: (or if you change the name of the excutable please use that) 
-If you are using powershell:
+5. The run the executable using: (or if you change the name of the excutable please use that)   
+If you are using powershell:  
 ``````
-       * ./mines
+       ./mines
 ``````
 If you are using command prompt:
 ``````
-       * mines
+       mines
 ``````
 
-### If you don't have MINGW installed please refer to this link to download...
+If you don't have MINGW installed please refer to this link to download...
 ``````
 https://sourceforge.net/projects/mingw/
 ``````
