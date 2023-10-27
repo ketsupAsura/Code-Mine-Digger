@@ -11,6 +11,7 @@
  */
 
 
+
 // ketsup@asura 
 #include <iostream>
 #include <limits>
@@ -294,7 +295,6 @@ int coordinate_x() {
     std::string inputy;
     int y;
 
-    // default warning message (needs inside of the loop to be reseted)
 
     while (true) {
         std::string warningMessage = "Invalid Input! Please Enter A Single Positive Digit Number...\n\n";
