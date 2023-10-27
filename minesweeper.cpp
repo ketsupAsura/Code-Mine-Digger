@@ -114,8 +114,26 @@ bool isFlag(const int &x, const int &y) {
 
 // check if the cell is already revealed i.e. the value is not the default '?'
 bool AlreadyRevealed(const int &x, const int &y) {
-    if (isFlag(x, y)) { return false; }
+
+    // by the way it took me too long to find how to put this feature (whatever it's fun finding a way)...
+    // during recursion we need to change the flag to an unrevealed tile
+    // because if in any case the the user inputs a tile which doens't Have
+    // any adjacent bombs then the revealCell will do a recursion 
+    // and even if it is flagged the cell or the tile should be revelead
+    // in short the system can as long as the tile is not a bomb will change the value of the tile
+    // but if the user try to open a flagged tile that should not be possible
+    
+    if (PLAYER_BOARD[x][y] == 'F') {
+        PLAYER_BOARD[x][y] = '?';
+    }
     if ( PLAYER_BOARD[x][y] != '?') { return true; }
+    return false; 
+}
+
+bool canBeRevealed(const int &x, const int &y) {
+    if (isFlag(x, y) || PLAYER_BOARD[x][y] == '?') {
+        return true;
+    }
     return false;
 }
 
@@ -143,14 +161,14 @@ void revealCell(const int &x, const int &y) {
     // in order to hid the bomb from the user
     if (num_mines == 0) {
 
-        if (isValid(x-1, y-1) && PLAYER_BOARD[x-1][y-1] == '?') { revealCell(x-1, y-1); }
-        if (isValid(x-1, y) && PLAYER_BOARD[x-1][y] == '?') { revealCell(x-1, y); }
-        if (isValid(x-1, y+1) && PLAYER_BOARD[x-1][y+1] == '?') { revealCell(x-1, y+1); }
-        if (isValid(x, y-1) && PLAYER_BOARD[x][y-1] == '?') { revealCell(x, y-1); }
-        if (isValid(x, y+1) && PLAYER_BOARD[x][y+1] == '?') { revealCell(x, y+1); }
-        if (isValid(x+1, y-1) && PLAYER_BOARD[x+1][y-1] == '?') { revealCell(x+1, y-1); }
-        if (isValid(x+1, y) && PLAYER_BOARD[x+1][y] == '?') { revealCell(x+1, y); }
-        if (isValid(x+1, y+1) && PLAYER_BOARD[x+1][y+1] == '?') { revealCell(x+1, y+1); }
+        if (isValid(x-1, y-1) && canBeRevealed(x-1, y-1)) { revealCell(x-1, y-1); }
+        if (isValid(x-1, y) && canBeRevealed(x-1, y)) { revealCell(x-1, y); }
+        if (isValid(x-1, y+1) && canBeRevealed(x-1, y+1)) { revealCell(x-1, y+1); }
+        if (isValid(x, y-1) && canBeRevealed(x, y-1)) { revealCell(x, y-1); }
+        if (isValid(x, y+1) && canBeRevealed(x, y+1)) { revealCell(x, y+1); }
+        if (isValid(x+1, y-1) && canBeRevealed(x+1, y-1)) { revealCell(x+1, y-1); }
+        if (isValid(x+1, y) && canBeRevealed(x+1, y)) { revealCell(x+1, y); }
+        if (isValid(x+1, y+1) && canBeRevealed(x+1, y+1)) { revealCell(x+1, y+1); }
 
     }
 }
@@ -304,8 +322,9 @@ int moveOptions() {
         std::string warningMessage = "\nInvalid Input! Please Enter A Single Positive Digit Number\n";
 
         std::cout << "Move Options " << std::endl;
-        std::cout << "[1] Reveal Cell" << std::endl;
-        std::cout << "[2] Put A Flag" << std::endl;
+        std::cout << "[1] Reveal Tile" << std::endl;
+        std::cout << "[2] Flag A Tile" << std::endl;
+        std::cout << "[3] Unflag A Tile" << std::endl;
         std::cout << "[0] Quit" << std::endl;
 
         std::cout << "MOVE: ";
@@ -313,7 +332,7 @@ int moveOptions() {
 
         moveOptionNumber = checkInput(input_MoveOption);
         if (moveOptionNumber != -1) {
-            bool isValid = moveOptionNumber >= 0 && moveOptionNumber <= 2;
+            bool isValid = moveOptionNumber >= 0 && moveOptionNumber <= 3;
             if (isValid) {
                 return moveOptionNumber;
             } else {
@@ -343,12 +362,12 @@ void gameloop() {
     while (true) {
         system("cls");
 
-        /*// Uncomment to print the HIDDEN_BOARD where the bombs are
+        // Uncomment to print the HIDDEN_BOARD where the bombs are
         std::cout << std::endl;
         std::cout << "HIDDEN_BOARD:" << std::endl;
         printBoard(HIDDEN_BOARD);
         std::cout << std::endl;
-        */
+        
         
         std::cout << "PLAYER_BOARD:" << std::endl;
         std::cout << "MOVES LEFT: "<< MOVES << std::endl;
@@ -356,42 +375,72 @@ void gameloop() {
         std::cout << "\n";
 
         int moveNumber = moveOptions();
-        bool putFlag = false;
+        bool Flag = false; // use when flagging and unflagging a tile
 
         if (moveNumber == 1) {
 
             std::string inputx, inputy;
-            std::cout << "Reveal Cell At: " << std::endl;
+            std::cout << "\nReveal cell at: " << std::endl;
             y = coordinate_x();
             x = coordinate_y();
 
-            revealCell(x, y);
+            if (!isFlag(x, y)) {
+                revealCell(x, y);
+            } else {
+                std::cout << "\nUnflag the tile before you can reveal it!" << std::endl;
+                system("pause");
+            }
+
         }
+
         if (moveNumber == 2) {
-            putFlag = true;
+            Flag = true;
+
+            std::cout  << "\nPut a flag at: " << std::endl;
             y = coordinate_x();
             x = coordinate_y();
-            PLAYER_BOARD[x][y] = 'F';
+            if (!AlreadyRevealed(x, y)) {
+                PLAYER_BOARD[x][y] = 'F';
+            } else {
+                std::cout << "\nFlags can only be placed on unopend tiles!" << std::endl;
+                system("pause");
+            }
         } 
+
+        if (moveNumber == 3) {
+            Flag = true;
+
+            std::cout << "\nUnflag at: " << std::endl;
+            y = coordinate_x();
+            x = coordinate_y();
+
+            if (isFlag(x, y)) {
+                PLAYER_BOARD[x][y] = '?';
+            } else {
+                std::cout << "\nUnflagging can only be done if a tile is flagged!" << std::endl;
+                system("pause");
+            }
+        }
             
         if(moveNumber == 0) {
             return;
         }
         
 
-        if(isMine(x, y) && putFlag == false) { 
+        if(isMine(x, y) && Flag == false) { 
             system("cls");
             bomb_ascii();
             system("pause");
+            system("cls");
 
             std::cout << "\nFINAL_BOARD:" << std::endl;
             printFinalBoard();
-            std::cout << "You dig the cell at x -> " << x << " ,Y ->" << y << std::endl;
+            std::cout << "You dig the cell at x -> " << x << " ,Y -> " << y << std::endl;
             std::cout << "You Lose!, you detonated the bomb" << std::endl; 
             std::cout << "\nLegend:" << std::endl;
             std::cout << "'*' -> mines" << std::endl;
             std::cout << "'?' -> unrevealed cell" << std::endl;
-            std::cout << "The number's (1-8) -> represents the number of bombs adjacent to that cell" << std::endl;
+            std::cout << "The number's (1-8) -> represents the number of bombs adjacent to that cell/tile" << std::endl;
             system("pause");
             return;
         }
@@ -400,6 +449,7 @@ void gameloop() {
             system("cls");
             win_ascii();
             system("pause");
+            system("cls");
 
             std::cout << "\nFINAL_BOARD:" << std::endl;
             printFinalBoard();
