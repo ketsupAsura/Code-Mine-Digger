@@ -74,7 +74,7 @@ https://sourceforge.net/projects/mingw/
 1. Objective: The goal of Minesweeper is to clear the board without detonating any mines.
 2. Game Board: You are presented with a grid of cells. Some cells contain mines, and others are safe.
 3. Game Rules:
-       - First move is safe
+       - First move is safe.
        - Click a cell to reveal its content.
        - If a mine is revealed, you lose the game.
        - If a number is revealed, it indicates the number of adjacent mines.
@@ -91,23 +91,23 @@ https://sourceforge.net/projects/mingw/
 
 ### Game modes (short description for the game modes)
 1. Difficulty Levels mode 
-       - The board size and number of mines will be determined based on the players
-       - chosen difficulty (easy, medium, and hard)
+       - The board size and number of mines will be determined based on the players.
+       - chosen difficulty (easy, medium, and hard).
 2. Custom mode 
-       - The board size and the number of mines is determined by the players
-       - The minimum board size is: rows = 3 and columns = 3  
-       - The number of mines should be less than the board size
+       - The board size and the number of mines is determined by the players.
+       - The minimum board size is: rows = 3 and columns = 3.  
+       - The number of mines should be less than the board size.
 3. Infinite Roulette mode 
-       - The board size and the number of mines is random
-       - The player will continue playing until he/she quits or lose the game
+       - The board size and the number of mines is random.
+       - The player will continue playing until he/she quits or lose the game.
        
 ### Leaderboard
 1. Difficulty Levels mode
-       - The player's rank is based on the time it took the player's chosen difficulty is completed(win the game)
-       - The shorter the time the higher the rank
+       - The player's rank is based on the time it took the player's chosen difficulty is completed(win the game).
+       - The shorter the time the higher the rank.
 2. Infinite Roulette mode
-       - The player's rank is based on how many win streak the player's did
-       - The more winning streak the higher the rank
+       - The player's rank is based on how many win streak the player's did.
+       - The more winning streak the higher the rank.
 
 If you encounter any unprecented behaviour in the program please feel free notify.  
 - To suggest a new feature or report a bug, please [create an issue](https://github.com/ketsupAsura/Code-Mine-Digger/issues).
