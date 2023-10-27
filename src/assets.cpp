@@ -35,22 +35,6 @@ void win_ascii() {
 
 }
 
-/*
-void game_title() {
-
-    std::cout << "\n\n";
-    std::cout << "        ________     ______ ______       ________           \n";    
-    std::cout << "       |\   ____\   |\   _ \  _   \     |\   ___ \          \n";    
-    std::cout << "       \ \  \___|   \ \  \\\__\ \  \    \ \  \_|\ \         \n"; 
-    std::cout << "        \ \  \       \ \  \\|__| \  \    \ \  \ \\ \        \n"; 
-    std::cout << "         \ \  \_____  \ \  \    \ \  \    \ \  \_\\ \       \n";
-    std::cout << "          \ \_______\  \ \__\    \ \__\    \ \_______\      \n";
-    std::cout << "           \|_______|   \|__|     \|__|     \|_______|      \n";
-    std::cout << "\n                  \"CODE MINE DIGGER\"                    \n";
-    std::cout << "\n\n";
-}
-*/
-
 // please don't touch 
 // it gives me a hard time pin pointing where to put the escape characters just to print '\' lol
 void game_title() {
@@ -86,4 +70,3 @@ void loading_animation() {
     }
 
 }
-
