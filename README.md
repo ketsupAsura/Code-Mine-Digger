@@ -34,7 +34,7 @@ Code Mine Digger/
 
 ### Instructions to Run and Play the Program
 
-Make sure that the Code Mind Digger folder is downloaded before continuing ...
+Make sure that the Code Mine Digger folder is downloaded before continuing ...
 
 Compiling (this assumes that you have mingw as your c++ compiler):
 1. First please open you terminal (cmd, powershell, etc.), 
