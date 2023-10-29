@@ -1,15 +1,3 @@
-/*
- * Code Mine Digger
- * MP2 and MP3: Application of Bubble, Insertion and Selection Sort
- * Class: BSCpE - 2A
- * Members:
- *     Matt Rohan Alagaban
- *     Hoechst Mostaza
- *     Paul Owen Belga
- *     Gian Tandog
- *     Robert Beralde
-*/
-
 // ketsup@asura
 #include <iostream>
 #include <fstream>
