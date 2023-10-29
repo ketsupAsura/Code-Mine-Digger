@@ -1,17 +1,3 @@
-/*
- * Code Mine Digger
- * MP1: Application of Arrays
- * Class: BSCpE - 2A
- * Members:
- *     Matt Rohan Alagaban
- *     Hoechst Mostaza
- *     Paul Owen Belga
- *     Gian Tandog
- *     Robert Beralde
- */
-
-
-
 // ketsup@asura 
 #include <iostream>
 #include <limits>
