@@ -23,43 +23,10 @@
 #include "rankings.h"
 
 // globals
-int ROWS, COLS; // will store the rows and columns (the size of the board)
-
-// The PLAYER_BOARD will be the board that is printed
-// while the HIDDEN_BOARD will be the board that is hidded as it contains the bombs
-char** PLAYER_BOARD, **HIDDEN_BOARD;  
-int MINES, MOVES;
+int ROWS, COLS, MINES; // will store the rows and columns (the size of the board)
 
 // will only be used in the infinite roulette game
 bool EXITED = true;
-
-
-// allocate memory for the board dynamically (during runtime)
-void allocate_memory(char**& board) {
-    board = new char* [ROWS];
-    for (int i = 0; i < ROWS; i++) {
-        board[i] = new char[COLS];
-    }
-}
-
-// this will free the memory from the boards after the game has ended
-void free_memory(char**& board) {
-    for (int i = 0; i < ROWS; i++) {
-        delete [] board[i];
-    }
-    delete [] board;
-    board = nullptr; // make sure that the pointer does not points anywhere in the memory
-}
-
-
-// put the ? character as the default value of the board
-void initializeBoard(char**& board) {
-    for (int i = 0; i < ROWS; i++) {
-        for (int j = 0; j < COLS; j++) {
-            board[i][j] = '?';
-        }
-    }
-}
 
 // check if the input is an integer (can be converted to an integer)
 int checkInput(std::string &input) {
@@ -78,268 +45,24 @@ int checkInput(std::string &input) {
     return std::stoi(input);
 }
 
-
-// put mines in the HIDDEN_BOARD in random
-void plantMines(const int &playerMove_x, const int &playerMove_y) {
-    std::srand(std::time(0));
-    while (MINES > 0) {
-        int x = std::rand() % ROWS;
-        int y = std::rand() % COLS;
-
-        // if the cell is the player's first move don't plant a mine
-        if (x == playerMove_x && y == playerMove_y) { continue; }
-
-        // if the cell already has a bomb then put the bomb in another cell
-        if (HIDDEN_BOARD[x][y] == '*') { continue; }
-        HIDDEN_BOARD[x][y] = '*';
-        MINES--;
-    }
-}
-
-
-// check if the position in the array is a valid coord
-bool isValid(const int &x, const int &y) {
-    return (x >= 0 && x < ROWS && y >= 0 && y < COLS);
-}
-
-
-// check if the cell is a mine
-bool isMine(const int &x, const int &y) {
-    if (HIDDEN_BOARD[x][y] == '*') { return true; }
-    else { return false; }
-}
-
-
-// counts the neighboring mines (the no. of adjacent mines from the cell the user picks)
-int countAdjacentMines(const int &x, const int &y) {
-    int count = 0;
-
-    if (isValid(x-1, y-1) && isMine(x-1, y-1)) { count++; }
-    if (isValid(x-1, y) && isMine(x-1, y)) { count++; }
-    if (isValid(x-1, y+1) && isMine(x-1, y+1)) { count++; }
-    if (isValid(x, y-1) && isMine(x, y-1)) { count++; }
-    if (isValid(x, y+1) && isMine(x, y+1)) { count++; }
-    if (isValid(x+1, y-1) && isMine(x+1, y-1)) { count++; }
-    if (isValid(x+1, y) && isMine(x+1, y)) { count++; }
-    if (isValid(x+1, y+1) && isMine(x+1, y+1)) { count++; }
-
-    return count;
-}
-
-
-
-// check if a cell is flagged
-bool isFlag(const int &x, const int &y) {
-    if (PLAYER_BOARD[x][y] == 'F') { 
-        return true; 
-    }
-    return false;
-}
-
-// check if the cell is already revealed i.e. the value is not the default '?'
-bool AlreadyRevealed(const int &x, const int &y) {
-
-    // by the way it took me too long to find how to put this feature (whatever it's fun finding a way)...
-    // during recursion we need to change the flag to an unrevealed tile
-    // because if in any case the the user inputs a tile which doens't Have
-    // any adjacent bombs then the revealCell will do a recursion 
-    // and even if it is flagged the cell or the tile should be revelead
-    // in short the system can as long as the tile is not a bomb will change the value of the tile
-    // but if the user try to open a flagged tile that should not be possible
-    
-    if (PLAYER_BOARD[x][y] == 'F') {
-        PLAYER_BOARD[x][y] = '?';
-    }
-    if ( PLAYER_BOARD[x][y] != '?') { return true; }
-    return false; 
-}
-
-bool canBeRevealed(const int &x, const int &y) {
-    if (isFlag(x, y) || PLAYER_BOARD[x][y] == '?') {
-        return true;
-    }
-    return false;
-}
-
-// reveal the cell ( does recursion if the user cell doesn't contain any neigboring mines)
-void revealCell(const int &x, const int &y) {
-
-    // this will ensure that the cell will not be revealed again if it is already revealed
-    if (AlreadyRevealed(x, y)) { 
-        return; 
-    }
-
-    int num_mines = countAdjacentMines(x, y);
-
-    // this works using implicit(automatically) conversion since in ASCII
-    // every character has a correponding integer value
-    PLAYER_BOARD[x][y] = '0' + num_mines;
-
-    if (PLAYER_BOARD[x][y] == '0') { PLAYER_BOARD[x][y] = ' '; }
-    MOVES--;
-
-    // if there is no mines we do recursion to reveal all the neighboring cells
-    // here the one that should be check is the PLAYER_BOARD
-    // as it is the one whom the value will chage each iteration 
-    // and the HIDDEN_BOARD is just a container for the bomb
-    // in order to hid the bomb from the user
-    if (num_mines == 0) {
-
-        if (isValid(x-1, y-1) && canBeRevealed(x-1, y-1)) { revealCell(x-1, y-1); }
-        if (isValid(x-1, y) && canBeRevealed(x-1, y)) { revealCell(x-1, y); }
-        if (isValid(x-1, y+1) && canBeRevealed(x-1, y+1)) { revealCell(x-1, y+1); }
-        if (isValid(x, y-1) && canBeRevealed(x, y-1)) { revealCell(x, y-1); }
-        if (isValid(x, y+1) && canBeRevealed(x, y+1)) { revealCell(x, y+1); }
-        if (isValid(x+1, y-1) && canBeRevealed(x+1, y-1)) { revealCell(x+1, y-1); }
-        if (isValid(x+1, y) && canBeRevealed(x+1, y)) { revealCell(x+1, y); }
-        if (isValid(x+1, y+1) && canBeRevealed(x+1, y+1)) { revealCell(x+1, y+1); }
-
-    }
-}
-
-// this is another version of the board which will contains much wider squares to see
-// cause i find the space of the previous board crowded and easy to be loss at where the coordinates are
-// as when the user puts a large number for the columns and rows there is a lot of square and 
-// less space for the tiles to be seen
-// though this uses a lots of  for loop
-void printBoard(char**& board) {
-    
-    // this will print the coordinate of x
-    std::cout << "\t   ";
-    for (int i = 0; i < COLS; i++) {
-        // this std::left and std::setw are way in c++ to formatt ouput
-        // needed to put the x coordinate properly
-        std::cout << std::left << std::setw(6) << i;
-    }
-    std::cout << "-> X" << std::endl;
-    
-    // will print the top part of the board
-    std::cout << std::right << std::setw(8) << "Y ";
-    for (int i = 0; i < COLS; i++) {
-        std::cout << " _____";
-    }
-    std::cout << std::endl;
-
-    for (int i = 0; i < ROWS; i++) {
-        std::cout << "\t|";
-        for (int j = 0; j < COLS; j++) {
-            std::cout << "     |";
-        }
-        std::cout << std::endl;
-
-        std::cout << "      " << i << " |";
-        for (int k = 0; k < COLS; k++) {
-            std::cout << "  " << board[i][k] << "  |";
-        }
-        std::cout << std::endl;
-
-        std::cout << "\t|";
-        for (int z = 0; z < COLS; z++) {
-            std::cout << "_____|";  
-        }
-        std::cout << std::endl;
-    }
-    
-}
-
-
-// the inline here is optional it just say that the function is oneline
-inline bool isValidNumMines() { return (ROWS * COLS) > MINES && MINES > 0; }
-
-void printFinalBoard() {
-
-    // this will print the coordinate of x
-    std::cout << "\t   ";
-    for (int i = 0; i < COLS; i++) {
-        // this std::left and std::setw are way in c++ to formatt ouput
-        // needed to put the x coordinate properly
-        std::cout << std::left << std::setw(6) << i;
-    }
-    std::cout << "-> X" << std::endl;
-
-    std::cout << std::right << std::setw(8) << "Y ";
-    for (int i = 0; i < COLS; i++) {
-        std::cout << " _____";
-    }
-    std::cout << std::endl;
-
-    for (int i = 0; i < ROWS; i++) {
-        std::cout << "\t|";
-        for (int j = 0; j < COLS; j++) {
-            std::cout << "     |";
-        }
-        std::cout << std::endl;
-
-        std::cout << "      " << i << " |";
-        for (int k = 0; k < COLS; k++) {
-            if (HIDDEN_BOARD[i][k] == '*') {
-                std::cout << "  " << HIDDEN_BOARD[i][k] << "  |";
-            }
-            else {
-                std::cout << "  " << PLAYER_BOARD[i][k] << "  |";
-            }
-        }
-        std::cout << std::endl;
-
-        std::cout << "\t|";
-        for (int z = 0; z < COLS; z++) {
-            std::cout << "_____|";  
-        }
-        std::cout << std::endl;
-    }
-
-}
-
-// this will get and return the  x coordinate (the columns)
-int coordinate_x() {
-    std::string inputy;
-    int y;
-
-
-    while (true) {
-        std::string warningMessage = "Invalid Input! Please Enter A Single Positive Digit Number...\n\n";
-        std::cout << "Enter the cell X-coordinate: ";
-        std::getline(std::cin, inputy);
-
-        y = checkInput(inputy);
-        if (y != -1 && y >= 0 && y < COLS) { return y; } 
-
-        if (y != -1) {
-            warningMessage = "Invalid X-coordinate!\n\n";
-        } 
-
-        std::cout << warningMessage;
-    }
-
-}
-
-// this will get and return the y coordinate (the rows)
-int coordinate_y() {
-    std::string inputx;
-    int x;
-
-
-    while (true) {
-        // default warning message (needs inside of the loop to be reseted)
-        std::string warningMessage = "Invalid Input! Please Enter A Single Positive Digit Number...\n\n";
-
-        std::cout << "Enter the cell Y-coordinate: ";
-        std::getline(std::cin, inputx);
-
-        x = checkInput(inputx);
-        if (x != -1 && x >= 0 && x < ROWS) { return x; }
-        if (x != -1) {
-            warningMessage = "Invalid Y-coordinate!\n\n";
-        } 
-
-        std::cout << warningMessage;
-    
-    }
-
-}
+// contains the user interface during gameplay
+// as well as get the needed input 
+class UserInterface {
+public:
+    int moveOptions();
+    int coordinate_x();
+    int coordinate_y();
+    std::string get_playerName();
+    void printLeaderboard(const std::string& filename);
+    void viewGameModeLeaderboard();
+    void difficultyLevelsLeaderboard(const std::string& difficulty, const std::string& name, int time);
+    bool onlyLetters(const std::string& playerName);
+    void printBoard(char**& board); 
+    void printFinalBoard(char**& player_board, char**& hidden_board);
+};
 
 // set of options the player can select every move in the game
-int moveOptions() {
+int UserInterface::moveOptions() {
     std::string input_MoveOption;
     int moveOptionNumber;
 
@@ -370,7 +93,55 @@ int moveOptions() {
     }
 }
 
-void printLeaderboard(const std::string& filename) {
+// this will get and return the  x coordinate (the columns)
+int UserInterface::coordinate_x() {
+    std::string inputy;
+    int y;
+
+
+    while (true) {
+        std::string warningMessage = "Invalid Input! Please Enter A Single Positive Digit Number...\n\n";
+        std::cout << "Enter the cell X-coordinate: ";
+        std::getline(std::cin, inputy);
+
+        y = checkInput(inputy);
+        if (y != -1 && y >= 0 && y < COLS) { return y; } 
+
+        if (y != -1) {
+            warningMessage = "Invalid X-coordinate!\n\n";
+        } 
+
+        std::cout << warningMessage;
+    }
+
+}
+
+// this will get and return the y coordinate (the rows)
+int UserInterface::coordinate_y() {
+    std::string inputx;
+    int x;
+
+
+    while (true) {
+        // default warning message (needs inside of the loop to be reseted)
+        std::string warningMessage = "Invalid Input! Please Enter A Single Positive Digit Number...\n\n";
+
+        std::cout << "Enter the cell Y-coordinate: ";
+        std::getline(std::cin, inputx);
+
+        x = checkInput(inputx);
+        if (x != -1 && x >= 0 && x < ROWS) { return x; }
+        if (x != -1) {
+            warningMessage = "Invalid Y-coordinate!\n\n";
+        } 
+
+        std::cout << warningMessage;
+    
+    }
+
+}
+
+void UserInterface::printLeaderboard(const std::string& filename) {
     std::string leaderboard_title;
     system("cls");
  
@@ -387,7 +158,7 @@ void printLeaderboard(const std::string& filename) {
 
 // will display the leaderboard and write the sorted leaderboard to the database file
 // according to what game mode leaderboard the player wants to see
-void viewGameModeLeaderboard() {
+void UserInterface::viewGameModeLeaderboard() {
     std::string input_choice;
     int choice;
     std::string filename;
@@ -439,7 +210,7 @@ void viewGameModeLeaderboard() {
 }
 
 // will append the name and score of the player in the leaderboard database
-void difficultyLevelsLeaderboard(const std::string& difficulty, const std::string& name, int time) {
+void UserInterface::difficultyLevelsLeaderboard(const std::string& difficulty, const std::string& name, int time) {
     std::string filename;
 
     if (difficulty.empty()) { return; }
@@ -455,7 +226,7 @@ void difficultyLevelsLeaderboard(const std::string& difficulty, const std::strin
 }
 
 
-bool onlyLetters(const std::string& playerName) {
+bool UserInterface::onlyLetters(const std::string& playerName) {
     for (char letter : playerName) {
         // allow  onlyc letters and spaces
         if (!std::isalpha(letter) && !std::isspace(letter)) { return false; }
@@ -464,7 +235,7 @@ bool onlyLetters(const std::string& playerName) {
 }
 
 // will get the players name
-std::string get_playerName() {
+std::string UserInterface::get_playerName() {
     std::string playerName;
 
     while (true) {
@@ -488,30 +259,299 @@ std::string get_playerName() {
     return playerName;
 }
 
+// this is another version of the board which will contains much wider squares to see
+// cause i find the space of the previous board crowded and easy to be loss at where the coordinates are
+// as when the user puts a large number for the columns and rows there is a lot of square and 
+// less space for the tiles to be seen
+// though this uses a lots of  for loop
+void UserInterface::printBoard(char**& board) {
+    
+    // this will print the coordinate of x
+    std::cout << "\t   ";
+    for (int i = 0; i < COLS; i++) {
+        // this std::left and std::setw are way in c++ to formatt ouput
+        // needed to put the x coordinate properly
+        std::cout << std::left << std::setw(6) << i;
+    }
+    std::cout << "-> X" << std::endl;
+    
+    // will print the top part of the board
+    std::cout << std::right << std::setw(8) << "Y ";
+    for (int i = 0; i < COLS; i++) {
+        std::cout << " _____";
+    }
+    std::cout << std::endl;
+
+    for (int i = 0; i < ROWS; i++) {
+        std::cout << "\t|";
+        for (int j = 0; j < COLS; j++) {
+            std::cout << "     |";
+        }
+        std::cout << std::endl;
+
+        std::cout << "      " << i << " |";
+        for (int k = 0; k < COLS; k++) {
+            std::cout << "  " << board[i][k] << "  |";
+        }
+        std::cout << std::endl;
+
+        std::cout << "\t|";
+        for (int z = 0; z < COLS; z++) {
+            std::cout << "_____|";  
+        }
+        std::cout << std::endl;
+    }
+    
+}
+
+
+void UserInterface::printFinalBoard(char**& player_board, char**& hidden_board) {
+
+    // this will print the coordinate of x
+    std::cout << "\t   ";
+    for (int i = 0; i < COLS; i++) {
+        // this std::left and std::setw are way in c++ to formatt ouput
+        // needed to put the x coordinate properly
+        std::cout << std::left << std::setw(6) << i;
+    }
+    std::cout << "-> X" << std::endl;
+
+    std::cout << std::right << std::setw(8) << "Y ";
+    for (int i = 0; i < COLS; i++) {
+        std::cout << " _____";
+    }
+    std::cout << std::endl;
+
+    for (int i = 0; i < ROWS; i++) {
+        std::cout << "\t|";
+        for (int j = 0; j < COLS; j++) {
+            std::cout << "     |";
+        }
+        std::cout << std::endl;
+
+        std::cout << "      " << i << " |";
+        for (int k = 0; k < COLS; k++) {
+            if (hidden_board[i][k] == '*') {
+                std::cout << "  " << hidden_board[i][k] << "  |";
+            }
+            else {
+                std::cout << "  " << player_board[i][k] << "  |";
+            }
+        }
+        std::cout << std::endl;
+
+        std::cout << "\t|";
+        for (int z = 0; z < COLS; z++) {
+            std::cout << "_____|";  
+        }
+        std::cout << std::endl;
+    }
+
+}
+
+// handles the gameloop and memory management(allocation/deallocation)
+class Minesweeper {
+private:
+    // The player_board will be the board that is printed
+    // while the hidden_board will be the board that is hidded as it contains the bombs
+    char** player_board, **hidden_board;  
+    int moves;
+    UserInterface &ui;
+public:
+    Minesweeper(UserInterface ui_);
+    void allocate_memory(char**& board);
+    void free_memory(char**& board);
+    void initializeBoard(char**& board);
+    void plantMines(const int &playerMove_x, const int &playerMove_y);
+    bool isValid(const int &x, const int &y);
+    bool isMine(const int &x, const int &y);
+    inline bool isValidNumMines();
+    int countAdjacentMines(const int &x, const int &y);
+    bool isFlag(const int &x, const int &y);
+    bool alreadyRevealed(const int &x, const int &y);
+    bool canBeRevealed(const int &x, const int &y);
+    void revealCell(const int &x, const int &y);
+    void gameloop(const std::string& gameMode, std::string playerName);
+};
+
+
+Minesweeper::Minesweeper(UserInterface ui_)
+: ui(ui_) {}
+
+// allocate memory for the board dynamically (during runtime)
+void Minesweeper::allocate_memory(char**& board) {
+    board = new char* [ROWS];
+    for (int i = 0; i < ROWS; i++) {
+        board[i] = new char[COLS];
+    }
+}
+
+// this will free the memory from the boards after the game has ended
+void Minesweeper::free_memory(char**& board) {
+    for (int i = 0; i < ROWS; i++) {
+        delete [] board[i];
+    }
+    delete [] board;
+    board = nullptr; // make sure that the pointer does not points anywhere in the memory
+}
+
+
+// put the ? character as the default value of the board
+void Minesweeper::initializeBoard(char**& board) {
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            board[i][j] = '?';
+        }
+    }
+}
+
+
+
+// put mines in the hidden_board in random
+void Minesweeper::plantMines(const int &playerMove_x, const int &playerMove_y) {
+    std::srand(std::time(0));
+    while (MINES > 0) {
+        int x = std::rand() % ROWS;
+        int y = std::rand() % COLS;
+
+        // if the cell is the player's first move don't plant a mine
+        if (x == playerMove_x && y == playerMove_y) { continue; }
+
+        // if the cell already has a bomb then put the bomb in another cell
+        if (hidden_board[x][y] == '*') { continue; }
+        hidden_board[x][y] = '*';
+        MINES--;
+    }
+}
+
+
+// check if the position in the array is a valid coord
+bool Minesweeper::isValid(const int &x, const int &y) {
+    return (x >= 0 && x < ROWS && y >= 0 && y < COLS);
+}
+
+
+// check if the cell is a mine
+bool Minesweeper::isMine(const int &x, const int &y) {
+    if (hidden_board[x][y] == '*') { return true; }
+    else { return false; }
+}
+
+// the inline here is optional it just say that the function is oneline
+inline bool Minesweeper::isValidNumMines() { return (ROWS * COLS) > MINES && MINES > 0; }
+
+// counts the neighboring mines (the no. of adjacent mines from the cell the user picks)
+int Minesweeper::countAdjacentMines(const int &x, const int &y) {
+    int count = 0;
+
+    if (isValid(x-1, y-1) && isMine(x-1, y-1)) { count++; }
+    if (isValid(x-1, y) && isMine(x-1, y)) { count++; }
+    if (isValid(x-1, y+1) && isMine(x-1, y+1)) { count++; }
+    if (isValid(x, y-1) && isMine(x, y-1)) { count++; }
+    if (isValid(x, y+1) && isMine(x, y+1)) { count++; }
+    if (isValid(x+1, y-1) && isMine(x+1, y-1)) { count++; }
+    if (isValid(x+1, y) && isMine(x+1, y)) { count++; }
+    if (isValid(x+1, y+1) && isMine(x+1, y+1)) { count++; }
+
+    return count;
+}
+
+
+
+// check if a cell is flagged
+bool Minesweeper::isFlag(const int &x, const int &y) {
+    if (player_board[x][y] == 'F') { 
+        return true; 
+    }
+    return false;
+}
+
+// check if the cell is already revealed i.e. the value is not the default '?'
+bool Minesweeper::alreadyRevealed(const int &x, const int &y) {
+
+    // by the way it took me too long to find how to put this feature (whatever it's fun finding a way)...
+    // during recursion we need to change the flag to an unrevealed tile
+    // because if in any case the the user inputs a tile which doens't Have
+    // any adjacent bombs then the revealCell will do a recursion 
+    // and even if it is flagged the cell or the tile should be revelead
+    // in short the system can as long as the tile is not a bomb will change the value of the tile
+    // but if the user try to open a flagged tile that should not be possible
+    
+    if (player_board[x][y] == 'F') {
+        player_board[x][y] = '?';
+    }
+    if ( player_board[x][y] != '?') { return true; }
+    return false; 
+}
+
+bool Minesweeper::canBeRevealed(const int &x, const int &y) {
+    if (isFlag(x, y) || player_board[x][y] == '?') {
+        return true;
+    }
+    return false;
+}
+
+// reveal the cell ( does recursion if the user cell doesn't contain any neigboring mines)
+void Minesweeper::revealCell(const int &x, const int &y) {
+
+    // this will ensure that the cell will not be revealed again if it is already revealed
+    if (alreadyRevealed(x, y)) { 
+        return; 
+    }
+
+    int num_mines = countAdjacentMines(x, y);
+
+    // this works using implicit(automatically) conversion since in ASCII
+    // every character has a correponding integer value
+    player_board[x][y] = '0' + num_mines;
+
+    if (player_board[x][y] == '0') { player_board[x][y] = ' '; }
+    moves--;
+
+    // if there is no mines we do recursion to reveal all the neighboring cells
+    // here the one that should be check is the player_board
+    // as it is the one whom the value will chage each iteration 
+    // and the hidden_board is just a container for the bomb
+    // in order to hid the bomb from the user
+    if (num_mines == 0) {
+
+        if (isValid(x-1, y-1) && canBeRevealed(x-1, y-1)) { revealCell(x-1, y-1); }
+        if (isValid(x-1, y) && canBeRevealed(x-1, y)) { revealCell(x-1, y); }
+        if (isValid(x-1, y+1) && canBeRevealed(x-1, y+1)) { revealCell(x-1, y+1); }
+        if (isValid(x, y-1) && canBeRevealed(x, y-1)) { revealCell(x, y-1); }
+        if (isValid(x, y+1) && canBeRevealed(x, y+1)) { revealCell(x, y+1); }
+        if (isValid(x+1, y-1) && canBeRevealed(x+1, y-1)) { revealCell(x+1, y-1); }
+        if (isValid(x+1, y) && canBeRevealed(x+1, y)) { revealCell(x+1, y); }
+        if (isValid(x+1, y+1) && canBeRevealed(x+1, y+1)) { revealCell(x+1, y+1); }
+
+    }
+}
+
+
 
 
 // take the move of the player, updates and renders the board
 // the behaviour will based on the user's selected gamemode
-void gameloop(const std::string& gameMode = "", std::string playerName = "") {
+void Minesweeper::gameloop(const std::string& gameMode = "", std::string playerName = "") {
 
     // this will check if the player's move is its first move
     bool playerFirstMove = true;
 
-    MOVES = ROWS * COLS - MINES;
+    moves = ROWS * COLS - MINES;
     
     // memory allocation
-    allocate_memory(PLAYER_BOARD);
-    allocate_memory(HIDDEN_BOARD);
+    allocate_memory(player_board);
+    allocate_memory(hidden_board);
 
     // initialize the board
-    initializeBoard(HIDDEN_BOARD);
-    initializeBoard(PLAYER_BOARD);
+    initializeBoard(hidden_board);
+    initializeBoard(player_board);
 
     // get the player name before starting the game
     // if there is no playerName provided 
     // don't get player name for custom_game
     if (playerName.empty() && gameMode != "custom_game") {
-        playerName = get_playerName();
+        playerName = ui.get_playerName();
     }
 
     int x, y;
@@ -520,20 +560,20 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
     while (true) {
         system("cls");
 
-        /*// Uncomment to print the HIDDEN_BOARD where the bombs are
+        // Uncomment to print the hidden_board where the bombs are
         std::cout << std::endl;
-        std::cout << "HIDDEN_BOARD:" << std::endl;
-        printBoard(HIDDEN_BOARD);
+        std::cout << "hidden_board:" << std::endl;
+        ui.printBoard(hidden_board);
         std::cout << std::endl;
-        */
         
         
-        //std::cout << "PLAYER_BOARD:" << std::endl;
-        printBoard(PLAYER_BOARD);
+        
+        //std::cout << "player_board:" << std::endl;
+        ui.printBoard(player_board);
         std::cout << "\n";
-        std::cout << "MOVES LEFT: "<< MOVES << std::endl;
+        std::cout << "moves LEFT: "<< moves << std::endl;
 
-        int moveNumber = moveOptions();
+        int moveNumber = ui.moveOptions();
     
         bool Flag = false; // use when flagging and unflagging a tile
 
@@ -541,8 +581,8 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
 
             std::string inputx, inputy;
             std::cout << "\nReveal cell at: " << std::endl;
-            y = coordinate_x(); // rows
-            x = coordinate_y(); // columns
+            y = ui.coordinate_x(); // rows
+            x = ui.coordinate_y(); // columns
 
             if (playerFirstMove) {
                 plantMines(x, y);
@@ -551,9 +591,10 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
 
             if (!isFlag(x, y)) {
                 revealCell(x, y);
-            } else {
+            } 
+            else {
                 Flag = true;
-                std::cout << "\nUnflag the tile before you can reveal it!" << std::endl;
+                std::cout << "\nUnflag the tile before you can reveal it!\n";
                 system("pause");
             }
 
@@ -564,17 +605,22 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
             Flag = true;
 
             std::cout << "\nFlag/Unflag At: \n";
-            y = coordinate_x();
-            x = coordinate_y();
+            y = ui.coordinate_x();
+            x = ui.coordinate_y();
 
             if (isFlag(x, y)) {
-                PLAYER_BOARD[x][y] = '?';
-                std::cout << "Unflag At: x -> " << y << ", y -> " << x << std::endl;
+                player_board[x][y] = '?';
+                std::cout << "Unflag At: x -> " << y << ", y -> " << x << "\n";
                 system("pause");
             } 
+            else if (alreadyRevealed(x, y)) {
+                //std::cout << "Flag can only be put in an unrevealed cell!\n";
+                std::cout << "\nA cell can only be flag if it is unrevealed!\n";
+                system("pause");
+            }
             else {
-                PLAYER_BOARD[x][y] = 'F';
-                std::cout << "Flag At: x -> " << y << ", y -> " << x << std::endl;
+                player_board[x][y] = 'F';
+                std::cout << "Flag At: x -> " << y << ", y -> " << x << "\n";
                 system("pause");
             }
            
@@ -584,8 +630,8 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
              if (gameMode == "infinite_roulette") { EXITED = true; }
 
             // game ended, free_memory
-            free_memory(PLAYER_BOARD);
-            free_memory(HIDDEN_BOARD);
+            free_memory(player_board);
+            free_memory(hidden_board);
             return;
         }
 
@@ -626,7 +672,7 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
             system("cls");
 
             std::cout << "\nFINAL_BOARD:" << std::endl;
-            printFinalBoard();
+            ui.printFinalBoard(player_board, hidden_board);
             std::cout << "You dig the cell at x -> " << y << " ,Y -> " << x << std::endl;
             std::cout << "You Lose!, you detonated the bomb" << std::endl; 
             std::cout << "\nLegend:" << std::endl;
@@ -637,13 +683,13 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
             system("pause");
 
             // game ended, free the memory
-            free_memory(PLAYER_BOARD);
-            free_memory(HIDDEN_BOARD);
+            free_memory(player_board);
+            free_memory(hidden_board);
 
             return;
         }
 
-        if (MOVES == 0) {
+        if (moves == 0) {
             if (gameMode == "infinite_roulette") { EXITED = false; }
 
             system("cls");
@@ -656,8 +702,8 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
             // convert the chrono time to integer
             int time = static_cast<int>(completionTimeInSeconds.count());
 
-            // record the data of the player
-            difficultyLevelsLeaderboard(gameMode, playerName, time);
+            // record the data of the player in difficulty level mode
+            ui.difficultyLevelsLeaderboard(gameMode, playerName, time);
 
             int hours = completionTimeInSeconds.count() / 3600;
             int minutes = (completionTimeInSeconds.count() % 3600) / 60;
@@ -669,7 +715,7 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
             system("cls");
 
             std::cout << "\nFINAL_BOARD:" << std::endl;
-            printFinalBoard();
+            ui.printFinalBoard(player_board, hidden_board);
             std::cout << "Eeeey...! You Win! Let's Go!" << std::endl;
             std::cout << "\nLegend:" << std::endl;
             std::cout << "'*' -> mines" << std::endl;
@@ -680,8 +726,8 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
 
             
             // game ended, free the memory
-            free_memory(PLAYER_BOARD);
-            free_memory(HIDDEN_BOARD);
+            free_memory(player_board);
+            free_memory(hidden_board);
 
             return;
         }
@@ -689,11 +735,26 @@ void gameloop(const std::string& gameMode = "", std::string playerName = "") {
     }
 }
 
+// contains the various modes of the game
+class GameMode {
+private:
+    Minesweeper &ms;
+public:
+    GameMode(Minesweeper ms_);
+    void customGame();
+    void difficultyLevels();
+    void infiniteRoulette(const std::string& gameMode, const std::string& playerName);
+
+};
+
+GameMode::GameMode(Minesweeper ms_)
+: ms(ms_) {}
+
 // The Rows and Columns of the board as well as the number of mines 
 // will be determined by this functions according to what the user selected game mode
 // ------------------------------------- Game Modes ---------------------------------------------
 
-void difficultyLevels() {
+void GameMode::difficultyLevels() {
     std::string input_difficulty;
     int difficulty;
 
@@ -722,21 +783,21 @@ void difficultyLevels() {
                     ROWS = 5;
                     COLS = 5;
                     MINES = 10;
-                    gameloop("easy");
+                    ms.gameloop("easy");
                     proceded = true;
                     break;
                 case 2: 
                     ROWS = 7;
                     COLS = 7;
                     MINES = 17;
-                    gameloop("medium");
+                    ms.gameloop("medium");
                     proceded = true;
                     break;
                 case 3: 
                     ROWS = 9;
                     COLS = 12;
                     MINES = 50;
-                    gameloop("hard");
+                    ms.gameloop("hard");
                     proceded = true;
                     break;
                 case 0: 
@@ -756,7 +817,7 @@ void difficultyLevels() {
 
 
 // custom game mode -> ask the user to initialize his/her own row, columns (size of the board) and no. of mines
-void customGame() {
+void GameMode::customGame() {
 
     // this variable will be place holder until the user input the valid data
     std::string rows, cols, mines;
@@ -807,7 +868,7 @@ void customGame() {
         std::cin >> mines;
 
         MINES = checkInput(mines);
-        if (MINES != -1 && isValidNumMines()) {
+        if (MINES != -1 && ms.isValidNumMines()) {
             break;
         } 
        
@@ -824,14 +885,14 @@ void customGame() {
     // it means that its already end of the line or the input (which will then put the value in the stream to a variable)
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 
-    gameloop("custom_game");
+    ms.gameloop("custom_game");
 
 }
 
 // this game will continuously give a random board as well as random mines
 // to the player to play, this will only end if the player choose to quit the game 
 // of if the player losses the game
-void infiniteRoulette(const std::string& gameMode, const std::string& playerName) {
+void GameMode::infiniteRoulette(const std::string& gameMode, const std::string& playerName) {
     // this is so hard to implement ... 
 
     srand(time(0));
@@ -842,20 +903,33 @@ void infiniteRoulette(const std::string& gameMode, const std::string& playerName
         // generates mine atmost half the board size 
         MINES = rand() % ((ROWS * COLS)/2);
 
+        // atleast 3 mines is on the board -> need to be updated
+        // if (MINES < 3) { MINES = 3; }
         // there is atleast 1 mine on the board
         if (MINES < 1) { MINES++; }
 
     } while (ROWS < 3 || COLS < 3 || MINES < 1);
 
-    gameloop(gameMode, playerName);
-
-
+    ms.gameloop(gameMode, playerName);
 }
 
 // ------------------------------------- Game Modes ---------------------------------------------
 
+// contains the menus of the game
+class Menu {
+private:
+    GameMode &gm;
+    UserInterface &ui;
+public: 
+    Menu(GameMode gm_, UserInterface ui_);
+    void gameMenu();
+    void startMenu();
+};
 
-void gameModes() {
+Menu::Menu(GameMode gm_, UserInterface ui_)
+: gm(gm_), ui(ui_) {}
+
+void Menu::gameMenu() {
     // this will store the user input until it is valid
     std::string input_choice;
 
@@ -868,9 +942,6 @@ void gameModes() {
         // this two variables will only be used in infinite_roulette game
         bool play_infiniteRoulette = false;
         int win_streak = 0;
-
-        bool play_minesAscent = false;
-        int level;
 
         // notes if the player plays a game
         bool proceded = false;
@@ -895,17 +966,17 @@ void gameModes() {
 
             switch (choice) {
                 case 1:
-                    difficultyLevels();
+                    gm.difficultyLevels();
                     proceded = true;
                     break;
                 case 2: 
-                    customGame();
+                    gm.customGame();
                     proceded = true;
                     break;
                 case 3: 
-                    playerName = get_playerName();
+                    playerName = ui.get_playerName();
                     while (true) {
-                        infiniteRoulette("infinite_roulette", playerName);
+                        gm.infiniteRoulette("infinite_roulette", playerName);
 
                         if (EXITED) { 
                             EXITED = false;
@@ -937,7 +1008,7 @@ void gameModes() {
 }
 
 // will be the starting menu of the game
-void startMenu() {
+void Menu::startMenu() {
     // this will store the user input until it is valid
     std::string input_choice;
 
@@ -964,11 +1035,11 @@ void startMenu() {
             switch (choice) {
                 case 1: 
                     proceded = true;
-                    gameModes(); 
+                    gameMenu(); 
                     break; 
                 case 2: 
                     proceded = true;
-                    viewGameModeLeaderboard(); 
+                    ui.viewGameModeLeaderboard(); 
                     break;
                 case 0: 
                     std::cout << "\nThank You For Checking The Game!!!" << std::endl;
@@ -986,6 +1057,11 @@ void startMenu() {
 }
 
 int main() {
-    startMenu();
+    UserInterface ui = UserInterface();
+    Minesweeper ms = Minesweeper(ui);
+    GameMode gm = GameMode(ms);
+    Menu menu = Menu(gm, ui);
+    menu.startMenu();
     return 0;
 }
+
