@@ -1,17 +1,3 @@
-/*
- * Code Mine Digger
- * MP1: Application of Arrays
- * Class: BSCpE - 2A
- * Members:
- *     Matt Rohan Alagaban
- *     Hoechst Mostaza
- *     Paul Owen Belga
- *     Gian Tandog
- *     Robert Beralde
- */
-
-
-
 // ketsup@asura 
 #include <iostream>
 #include <limits>
@@ -50,8 +36,8 @@ int checkInput(std::string &input) {
 class UserInterface {
 public:
     int moveOptions();
-    int coordinate_x();
-    int coordinate_y();
+    int getCoordinateX();
+    int getCoordinateY();
     std::string get_playerName();
     void printLeaderboard(const std::string& filename);
     void viewGameModeLeaderboard();
@@ -94,7 +80,7 @@ int UserInterface::moveOptions() {
 }
 
 // this will get and return the  x coordinate (the columns)
-int UserInterface::coordinate_x() {
+int UserInterface::getCoordinateX() {
     std::string inputy;
     int y;
 
@@ -117,7 +103,7 @@ int UserInterface::coordinate_x() {
 }
 
 // this will get and return the y coordinate (the rows)
-int UserInterface::coordinate_y() {
+int UserInterface::getCoordinateY() {
     std::string inputx;
     int x;
 
@@ -363,7 +349,7 @@ public:
     void free_memory(char**& board);
     void initializeBoard(char**& board);
     void plantMines(const int &playerMove_x, const int &playerMove_y);
-    bool isValid(const int &x, const int &y);
+    bool isValidCoord(const int &x, const int &y);
     bool isMine(const int &x, const int &y);
     inline bool isValidNumMines();
     int countAdjacentMines(const int &x, const int &y);
@@ -426,7 +412,7 @@ void Minesweeper::plantMines(const int &playerMove_x, const int &playerMove_y) {
 
 
 // check if the position in the array is a valid coord
-bool Minesweeper::isValid(const int &x, const int &y) {
+bool Minesweeper::isValidCoord(const int &x, const int &y) {
     return (x >= 0 && x < ROWS && y >= 0 && y < COLS);
 }
 
@@ -444,14 +430,14 @@ inline bool Minesweeper::isValidNumMines() { return (ROWS * COLS) > MINES && MIN
 int Minesweeper::countAdjacentMines(const int &x, const int &y) {
     int count = 0;
 
-    if (isValid(x-1, y-1) && isMine(x-1, y-1)) { count++; }
-    if (isValid(x-1, y) && isMine(x-1, y)) { count++; }
-    if (isValid(x-1, y+1) && isMine(x-1, y+1)) { count++; }
-    if (isValid(x, y-1) && isMine(x, y-1)) { count++; }
-    if (isValid(x, y+1) && isMine(x, y+1)) { count++; }
-    if (isValid(x+1, y-1) && isMine(x+1, y-1)) { count++; }
-    if (isValid(x+1, y) && isMine(x+1, y)) { count++; }
-    if (isValid(x+1, y+1) && isMine(x+1, y+1)) { count++; }
+    if (isValidCoord(x-1, y-1) && isMine(x-1, y-1)) { count++; }
+    if (isValidCoord(x-1, y) && isMine(x-1, y)) { count++; }
+    if (isValidCoord(x-1, y+1) && isMine(x-1, y+1)) { count++; }
+    if (isValidCoord(x, y-1) && isMine(x, y-1)) { count++; }
+    if (isValidCoord(x, y+1) && isMine(x, y+1)) { count++; }
+    if (isValidCoord(x+1, y-1) && isMine(x+1, y-1)) { count++; }
+    if (isValidCoord(x+1, y) && isMine(x+1, y)) { count++; }
+    if (isValidCoord(x+1, y+1) && isMine(x+1, y+1)) { count++; }
 
     return count;
 }
@@ -515,14 +501,14 @@ void Minesweeper::revealCell(const int &x, const int &y) {
     // in order to hid the bomb from the user
     if (num_mines == 0) {
 
-        if (isValid(x-1, y-1) && canBeRevealed(x-1, y-1)) { revealCell(x-1, y-1); }
-        if (isValid(x-1, y) && canBeRevealed(x-1, y)) { revealCell(x-1, y); }
-        if (isValid(x-1, y+1) && canBeRevealed(x-1, y+1)) { revealCell(x-1, y+1); }
-        if (isValid(x, y-1) && canBeRevealed(x, y-1)) { revealCell(x, y-1); }
-        if (isValid(x, y+1) && canBeRevealed(x, y+1)) { revealCell(x, y+1); }
-        if (isValid(x+1, y-1) && canBeRevealed(x+1, y-1)) { revealCell(x+1, y-1); }
-        if (isValid(x+1, y) && canBeRevealed(x+1, y)) { revealCell(x+1, y); }
-        if (isValid(x+1, y+1) && canBeRevealed(x+1, y+1)) { revealCell(x+1, y+1); }
+        if (isValidCoord(x-1, y-1) && canBeRevealed(x-1, y-1)) { revealCell(x-1, y-1); }
+        if (isValidCoord(x-1, y) && canBeRevealed(x-1, y)) { revealCell(x-1, y); }
+        if (isValidCoord(x-1, y+1) && canBeRevealed(x-1, y+1)) { revealCell(x-1, y+1); }
+        if (isValidCoord(x, y-1) && canBeRevealed(x, y-1)) { revealCell(x, y-1); }
+        if (isValidCoord(x, y+1) && canBeRevealed(x, y+1)) { revealCell(x, y+1); }
+        if (isValidCoord(x+1, y-1) && canBeRevealed(x+1, y-1)) { revealCell(x+1, y-1); }
+        if (isValidCoord(x+1, y) && canBeRevealed(x+1, y)) { revealCell(x+1, y); }
+        if (isValidCoord(x+1, y+1) && canBeRevealed(x+1, y+1)) { revealCell(x+1, y+1); }
 
     }
 }
@@ -581,8 +567,8 @@ void Minesweeper::gameloop(const std::string& gameMode = "", std::string playerN
 
             std::string inputx, inputy;
             std::cout << "\nReveal cell at: " << std::endl;
-            y = ui.coordinate_x(); // rows
-            x = ui.coordinate_y(); // columns
+            y = ui.getCoordinateX(); // rows
+            x = ui.getCoordinateY(); // columns
 
             if (playerFirstMove) {
                 plantMines(x, y);
@@ -605,8 +591,8 @@ void Minesweeper::gameloop(const std::string& gameMode = "", std::string playerN
             Flag = true;
 
             std::cout << "\nFlag/Unflag At: \n";
-            y = ui.coordinate_x();
-            x = ui.coordinate_y();
+            y = ui.getCoordinateX(); 
+            x = ui.getCoordinateY();
 
             if (isFlag(x, y)) {
                 player_board[x][y] = '?';
