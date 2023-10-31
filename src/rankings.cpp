@@ -121,14 +121,20 @@ void Leaderboard::readLeaderboardFromFile() {
     std::string path = "data/" + filename;
     fhand.open(path, std::ios::in);
 
-    // since the format of data is (name time)
-    LeaderboardEntry entry;
-    
     // until there is data from the file continue putting it in the vector
-    // first it will put the data from the fhand to the entry.player_name until it encounter ','
-    // and put the remaining data which is the score of the  player in the entry.score
-    while (std::getline(fhand, entry.player_name, ',') && fhand >> entry.score) {
-        fhand.ignore(); // ignore's the newline character, eof of line
+    while (!fhand.eof()) {
+        LeaderboardEntry entry;
+
+        // Read the player_name
+        std::getline(fhand, entry.player_name, ',');
+
+        // Read the score
+        fhand >> entry.score;
+
+        // Ignore the newline character
+        fhand.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+
+        // Add the entry to the leaderboard vector
         leaderboard.push_back(entry);
     }
     fhand.close();
@@ -170,7 +176,6 @@ void Leaderboard::displayLeaderboard() {
 
      if (isFileExistAndNotEmpty()) {
         readLeaderboardFromFile();
-        writeLeaderboardToFile();
     } else {
         std::cout << "The Leaderboard is empty!\n\n\n";
         system("pause");
@@ -188,6 +193,13 @@ void Leaderboard::displayLeaderboard() {
         selectionSort(leaderboard);
     }
 
+    
+    std::cout << "Before filetring: " << std::endl;
+    std::cout << leaderboard.size() << std::endl;
+    for (auto entry : leaderboard) {
+        std::cout << entry.player_name << ", ";
+        std::cout << entry.score << std::endl;
+    }
 
     // filter
     // Remove duplicates based on player_name, the second occurence will be the one to be deleted
@@ -196,6 +208,15 @@ void Leaderboard::displayLeaderboard() {
             return a.player_name == b.player_name;
         }), leaderboard.end());
 
+    
+    std::cout << "After filetring: " << std::endl;
+    std::cout << leaderboard.size() << std::endl;
+    for (auto entry : leaderboard) {
+        std::cout << entry.player_name << ", ";
+        std::cout << entry.score << std::endl;
+    }
+
+    writeLeaderboardToFile();
 
     if (filename == "easyLeaderboard.txt" || filename == "mediumLeaderboard.txt" || filename == "hardLeaderboard.txt") {
         printDifficultyLevels();
