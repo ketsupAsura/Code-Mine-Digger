@@ -12,7 +12,7 @@
 int ROWS, COLS, MINES; // will store the rows and columns (the size of the board)
 
 // will only be used in the infinite roulette game
-bool EXITED = true;
+bool EXITED = false;
 
 // check if the input is an integer (can be converted to an integer)
 int checkInput(std::string &input) {
