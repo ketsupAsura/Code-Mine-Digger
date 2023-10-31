@@ -566,12 +566,13 @@ void Minesweeper::gameloop(const std::string& gameMode = "", std::string playerN
         std::cout << "hidden_board:" << std::endl;
         ui.printBoard(hidden_board);
         std::cout << std::endl;
-        */ 
+        */
+         
         
         //std::cout << "player_board:" << std::endl;
         ui.printBoard(player_board);
         std::cout << "\n";
-        std::cout << "moves LEFT: "<< moves << std::endl;
+        std::cout << "MOVES LEFT: "<< moves << std::endl;
 
         int moveNumber = ui.moveOptions();
     
@@ -895,18 +896,27 @@ void GameMode::customGame() {
 void GameMode::infiniteRoulette(const std::string& gameMode, const std::string& playerName) {
     // this is so hard to implement ... 
 
-    srand(time(0));
-    do {
-        ROWS = rand() % 9;
-        COLS = rand() % 20;
+    while (true) {
+        srand(time(0));
+
+        // we add 3 here because if it generate zero
+        // the the mines would have an equation of rand() % 0 which is an error
+        ROWS = (rand() % 9) + 3;
+        COLS = (rand() % 20) + 3;
+        /*
+        std::cout << "rows: " << ROWS << std::endl;
+        std::cout << "cols: " << COLS << std::endl;
+        system("pause");
+        */
 
         // generates mine atmost half the board size 
         MINES = rand() % ((ROWS * COLS)/2);
 
         // atleast 3 mines is on the board
         if (MINES < 3) { MINES = 3; }
+        if (ROWS >= 3 && COLS >= 3 && ROWS <= 9 && COLS <= 20) { break; }
+     }
 
-    } while (ROWS < 3 || COLS < 3);
 
     ms.gameloop(gameMode, playerName);
 }
