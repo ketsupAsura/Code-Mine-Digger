@@ -67,7 +67,7 @@ void Leaderboard::printDifficultyLevels() {
         std::string gameTime = hours + ":" + minutes + ":" + seconds;
 
         // Display the sorted leaderboard
-        std::cout << "\t|      " << rank << "       |";  
+        std::cout << "\t|     " << std::left << std::setw(9) << rank << "|";  
         std::cout << "  " <<  std::left << std::setw(12) << entry.player_name << "           |";
         std::cout << "  "<< std::left << std::setw(12)  << gameTime << "      |\n";
         std::cout << "\t+--------------+-------------------------+--------------------+\n";
@@ -87,9 +87,9 @@ void Leaderboard::printInfiteRoulette() {
 
     int rank = 1;
     for (const LeaderboardEntry& entry : leaderboard) {
-        std::cout << "\t|      " << rank << "       |";  
+        std::cout << "\t|     " << std::left << std::setw(9) << rank << "|";  
         std::cout << "  " <<  std::left << std::setw(12) << entry.player_name << "           |";
-        std::cout << "  "<< std::left << std::setw(12)  << entry.score << "      |\n";
+        std::cout << "        "<< std::left << std::setw(12) << entry.score << "|\n";
         std::cout << "\t+--------------+-------------------------+--------------------+\n";
 
         rank++;
@@ -121,7 +121,7 @@ void Leaderboard::readLeaderboardFromFile() {
     std::string path = "data/" + filename;
     fhand.open(path, std::ios::in);
 
-    // until there is data from the file continue putting it in the vector
+    // kept putting the data until its the end of the file
     while (!fhand.eof()) {
         LeaderboardEntry entry;
 
@@ -143,6 +143,9 @@ void Leaderboard::readLeaderboardFromFile() {
 
 
 void Leaderboard::appendDataToFile(const std::string& name, int score) {
+    // if the name is empty then were not going to append it to the file
+    if (name.empty()) { return; }
+
     std::string dataToAppend = name + "," + std::to_string(score);
 
     // open the file in append mode
@@ -193,28 +196,30 @@ void Leaderboard::displayLeaderboard() {
         selectionSort(leaderboard);
     }
 
-    
+   /* used for debugging
     std::cout << "Before filetring: " << std::endl;
     std::cout << leaderboard.size() << std::endl;
     for (auto entry : leaderboard) {
         std::cout << entry.player_name << ", ";
         std::cout << entry.score << std::endl;
     }
+    */
 
     // filter
     // Remove duplicates based on player_name, the second occurence will be the one to be deleted
-    leaderboard.erase(std::unique(leaderboard.begin(), leaderboard.end(),
+    auto duplicate = std::unique(leaderboard.begin(), leaderboard.end(),
         [](const LeaderboardEntry& a, const LeaderboardEntry& b) {
             return a.player_name == b.player_name;
-        }), leaderboard.end());
+        });
+    leaderboard.erase(duplicate, leaderboard.end());
 
-    
+   /* used for debugging
     std::cout << "After filetring: " << std::endl;
     std::cout << leaderboard.size() << std::endl;
     for (auto entry : leaderboard) {
         std::cout << entry.player_name << ", ";
         std::cout << entry.score << std::endl;
-    }
+    } */
 
     writeLeaderboardToFile();
 
