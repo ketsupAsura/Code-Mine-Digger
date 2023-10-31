@@ -213,8 +213,9 @@ void UserInterface::difficultyLevelsLeaderboard(const std::string& difficulty, c
 
 
 bool UserInterface::onlyLetters(const std::string& playerName) {
+
     for (char letter : playerName) {
-        // allow  onlyc letters and spaces
+        // allow  only letters and spaces
         if (!std::isalpha(letter) && !std::isspace(letter)) { return false; }
     }
     return true;
@@ -228,17 +229,31 @@ std::string UserInterface::get_playerName() {
         std::cout << "\nEnter your name: ";
         std::getline(std::cin, playerName);
 
+        // player name cannot be empty
+        if (playerName.empty()) {
+            std::cout << "Name should not be empty!\n";
+            continue;
+        }
+
+        // first character of the name should not be a space
+        if (std::isspace(playerName[0])) { 
+            std::cout << "Name cannot start with spaces!\n";
+            continue;
+        }
+
         // limit the name
         if (playerName.length() > 10) {
-            std::cout  << "Name should be less than 10 characters\n";
+            std::cout  << "Name should be less than 10 characters!\n";
             continue;
         }
          
         // should only contains letter
         if (!onlyLetters(playerName)) {
-            std::cout << "Name should only contains letters\n";
+            std::cout << "Name should only contains letters and spaces!\n";
             continue;
         }
+
+        
         break;
     }
 
@@ -546,13 +561,12 @@ void Minesweeper::gameloop(const std::string& gameMode = "", std::string playerN
     while (true) {
         system("cls");
 
-        // Uncomment to print the hidden_board where the bombs are
+        /*// Uncomment to print the hidden_board where the bombs are
         std::cout << std::endl;
         std::cout << "hidden_board:" << std::endl;
         ui.printBoard(hidden_board);
         std::cout << std::endl;
-        
-        
+        */ 
         
         //std::cout << "player_board:" << std::endl;
         ui.printBoard(player_board);
