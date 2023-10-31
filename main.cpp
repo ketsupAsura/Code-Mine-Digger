@@ -903,12 +903,10 @@ void GameMode::infiniteRoulette(const std::string& gameMode, const std::string& 
         // generates mine atmost half the board size 
         MINES = rand() % ((ROWS * COLS)/2);
 
-        // atleast 3 mines is on the board -> need to be updated
-        // if (MINES < 3) { MINES = 3; }
-        // there is atleast 1 mine on the board
-        if (MINES < 1) { MINES++; }
+        // atleast 3 mines is on the board
+        if (MINES < 3) { MINES = 3; }
 
-    } while (ROWS < 3 || COLS < 3 || MINES < 1);
+    } while (ROWS < 3 || COLS < 3);
 
     ms.gameloop(gameMode, playerName);
 }
