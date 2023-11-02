@@ -127,6 +127,11 @@ void Leaderboard::readLeaderboardFromFile() {
 
         // Read the player_name
         std::getline(fhand, entry.player_name, ',');
+        
+        // since .eof() checks until the blankline of the file
+        // it also reads the blankline so we check if the line
+        // is empty if it gives this field an empty string
+        if (entry.player_name.empty()) { break; }
 
         // Read the score
         fhand >> entry.score;
@@ -146,7 +151,7 @@ void Leaderboard::appendDataToFile(const std::string& name, int score) {
     // if the name is empty then were not going to append it to the file
     if (name.empty()) { return; }
 
-    std::string dataToAppend = name + "," + std::to_string(score);
+    std::string dataToAppend = name + "," + std::to_string(score) + "\n";
 
     // open the file in append mode
     std::fstream fhand;
@@ -196,6 +201,7 @@ void Leaderboard::displayLeaderboard() {
         selectionSort(leaderboard);
     }
 
+
    /* used for debugging
     std::cout << "Before filetring: " << std::endl;
     std::cout << leaderboard.size() << std::endl;
@@ -229,6 +235,7 @@ void Leaderboard::displayLeaderboard() {
 
     if (filename == "infinite.txt") {
         printInfiteRoulette();
+
     }
 
     std::cout << "\n\n";
