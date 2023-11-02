@@ -13,6 +13,11 @@ Please play the game to find out more of its functions.
 ``````
 Code Mine Digger/
 │
+├── data/ 
+│     -> (contain the data for the leaderboard)
+│     -> (files are automatically added as the game start to recieve the data from the game) 
+│     -> (the data is used by the ranking library to create the leaderboard)
+│
 ├── include/
 │   ├── assets.h      (ASCII Designs interface) 
 │   └── rankings.h    (Leaderboard && Sorting interface)
@@ -46,8 +51,9 @@ Building:
 g++ main.cpp assets.o rankings.o -I include -o mines
 ``````
 Run and play the game:
-5. The run the executable using:   
+5. The run the executable using: 
 (or if you change the name of the excutable please use that)   
+
 If you are using powershell:  
 ``````
 ./mines
