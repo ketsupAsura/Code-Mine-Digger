@@ -530,7 +530,6 @@ void Minesweeper::revealCell(const int &x, const int &y) {
 
 
 
-
 // take the move of the player, updates and renders the board
 // the behaviour will based on the user's selected gamemode
 void Minesweeper::gameloop(const std::string& gameMode = "", std::string playerName = "") {
@@ -878,7 +877,7 @@ void GameMode::customGame() {
 
     }
 
-    // I found out that system("pause") will leave \n in the input streamsize 
+    // I found out that system("pause") will leave \n in the input stream 
     // if the user enters (since user can enter any key on the keyboard to continue)
     // so this next line will make sure that the \n will be ignored 
     // as the next function in these is the gameloop which also
@@ -1004,6 +1003,7 @@ void Menu::gameMenu() {
 
         }
 
+        
         if (play_infiniteRoulette) {
             Leaderboard leaderboard = Leaderboard("infinite.txt");
             leaderboard.appendDataToFile(playerName, win_streak);
