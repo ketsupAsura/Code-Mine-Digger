@@ -1,5 +1,6 @@
 Author: ketsup@asura
 
+Can only be run in a windows operating system
 ### Code Mine Digger 
 Is an exciting variation of the classic Minesweeper game.
 Offering a fresh take on the original concept. 
@@ -24,35 +25,40 @@ Code Mine Digger/
 │
 ├── src/
 │   ├── assets.cpp    (ASCII Designs Implementation)
-│   └── helper.cpp    (Leaderboard && Sorting Implementation)
+│   ├── ranking.cpp    (Leaderboard && Sorting Implementation) 
+│   └── main.cpp (Array Impementation -> through minesweeper game and modes)
 │
-└── main.cpp (Array Impementation -> through minesweeper game and modes)
+└── README.md
 ``````
 
-### Instructions to Run and Play the Program
+This assumes that you have mingw as your c++ compiler
+### Instructions To Run The Program: 
 
-Make sure that the Code Mine Digger folder is downloaded before continuing ...
-
-Compiling (this assumes that you have mingw as your c++ compiler):
+Make sure to download the program folder before proceeding
+### Building 
 1. First please open you terminal (cmd, powershell, etc.), 
-   And make sure you are at the directory where the program is located, 
-   i.e in the Code Mine Digger folder that you downloaded. 
+   And make sure you are at the directory where the program folder is located, 
+   i.e in the folder that you downloaded. 
    You can check the directory you are in using the command: pwd
 2. To move to a directory you can use the command: cd [programDirectory]
-3. Compile the two libraries into object using:
+3. Then go to its src direrctory using the command: cd src
+
+Compile:
+4. Compile the files into object using:
 ``````
-g++ -c src/assets.cpp -I include -o assets.o
-g++ -c src/rankings.cpp -I include -o rankings.o
+g++ -c assets.cpp -I ../include -o assets.o
+g++ -c rankings.cpp -I ../include -o rankings.o
+g++ -c main.cpp -I ../include -o main.o
 ``````
-Building:
-4. After turning the two files to object link it together with the main files:  
-   (note: you can name the excutable mines with any name you want)      
+5. Link the objects to create the binary:  
 ``````
-g++ main.cpp assets.o rankings.o -I include -o mines
+g++ main.o assets.o rankings.o -o ../bin/termContacts
 ``````
-Run and play the game:
-5. The run the executable using: 
-(or if you change the name of the excutable please use that)   
+### Execution:
+6. Go to the bin folder using the command: cd ../bin
+   The binary is located in that directory  
+   The run the binary using: 
+   (or if you change the name of the binary please use that)   
 
 If you are using powershell:  
 ``````
