@@ -98,7 +98,7 @@ void Leaderboard::printInfiteRoulette() {
 
 bool Leaderboard::isFileExistAndNotEmpty() {
     bool isFileValid = true;
-    std::string path = "data/" + filename;
+    std::string path = "../data/" + filename;
 
     std::fstream fhand(path, std::ios::in);
 
@@ -118,7 +118,7 @@ void Leaderboard::readLeaderboardFromFile() {
 
     // open the file in read mode
     std::fstream fhand;
-    std::string path = "data/" + filename;
+    std::string path = "../data/" + filename;
     fhand.open(path, std::ios::in);
 
     // kept putting the data until its the end of the file
@@ -155,7 +155,7 @@ void Leaderboard::appendDataToFile(const std::string& name, int score) {
 
     // open the file in append mode
     std::fstream fhand;
-    std::string path = "data/" + filename;
+    std::string path = "../data/" + filename;
     fhand.open(path, std::ios::app);
 
     fhand << dataToAppend;
@@ -169,7 +169,7 @@ void Leaderboard::writeLeaderboardToFile() {
 
     // open the file in write mode
     std::fstream fhand;
-    std::string path = "data/" + filename;
+    std::string path = "../data/" + filename;
     fhand.open(path, std::ios::out);
 
     std::string dataToWrite;
@@ -190,7 +190,7 @@ void Leaderboard::displayLeaderboard() {
         return;
     }
 
-    // sort according to what the game leaderboard needs
+    // sort the scores according to what the game leaderboard needs
     if (filename == "easyLeaderboard.txt") {
         bubbleSort(leaderboard);
     } else if (filename == "mediumLeaderboard.txt") {
@@ -202,24 +202,50 @@ void Leaderboard::displayLeaderboard() {
     }
 
 
-   /* used for debugging
+    // we need to sort the sorted vector by name since we need to delete the duplicates later
+    // and the method only works with consecutive duplicates
+    // the outcome of this is that the vector will have be sorted in ascending order
+    // now we are sure that the first duplicate have the highest ranking than the next duplicates 
+    std::sort(leaderboard.begin(), leaderboard.end(), 
+             [](const LeaderboardEntry& a, const LeaderboardEntry& b) {
+                  return a.player_name < b.player_name;
+              });
+
+    /* // used for debugging
     std::cout << "Before filetring: " << std::endl;
     std::cout << leaderboard.size() << std::endl;
     for (auto entry : leaderboard) {
         std::cout << entry.player_name << ", ";
         std::cout << entry.score << std::endl;
-    }
-    */
+    } */
+    
 
-    // filter
-    // Remove duplicates based on player_name, the second occurence will be the one to be deleted
+    // in here the the vector is already sorted where the duplicates are consecutive and
+    // the very first occurence of that duplicates have the highest score in the rankings
+    // so this will just move the occurrences after the first occurence to the back of the vector and 
+    // returns were the duplicates begin
     auto duplicate = std::unique(leaderboard.begin(), leaderboard.end(),
         [](const LeaderboardEntry& a, const LeaderboardEntry& b) {
-            return a.player_name == b.player_name;
+            return (a.player_name == b.player_name);
         });
+
+    // here we delete all the duplicates (the starting point of the duplicates will be returned by the std::unique),
+    // until the last element of the vector so we erase from that start to end.
     leaderboard.erase(duplicate, leaderboard.end());
 
-   /* used for debugging
+    // here we need to sort it again to make sure that the player with the highest rank will have the 
+    // highest rank in the leaderboard, since we sorted it by name, meaning its not sorted by their score
+    if (filename == "easyLeaderboard.txt") {
+        bubbleSort(leaderboard);
+    } else if (filename == "mediumLeaderboard.txt") {
+        bubbleSort(leaderboard);
+    } else if (filename == "hardLeaderboard.txt") {
+        insertionSort(leaderboard);
+    } else {
+        selectionSort(leaderboard);
+    }
+
+    /*// used for debugging
     std::cout << "After filetring: " << std::endl;
     std::cout << leaderboard.size() << std::endl;
     for (auto entry : leaderboard) {
@@ -227,8 +253,10 @@ void Leaderboard::displayLeaderboard() {
         std::cout << entry.score << std::endl;
     } */
 
+    // then we write the changes into a file
     writeLeaderboardToFile();
 
+    // the next lines prints the right table rankings for the the game mode the player has choosen  
     if (filename == "easyLeaderboard.txt" || filename == "mediumLeaderboard.txt" || filename == "hardLeaderboard.txt") {
         printDifficultyLevels();
     }
